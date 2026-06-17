@@ -9,6 +9,7 @@ def calculer_indicateurs(df_capteur, df_events):
 
     }
 
-    print(df_capteur['spo2'])
+    #print(df_events[''])
+    #print(df_capteur['spo2'])
 
     return stats
