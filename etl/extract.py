@@ -15,6 +15,7 @@ def recuperer_donnees(id_nuit : int):
     conn = mysql.connector.connect(
         host=os.environ.get("host"),
         user=os.environ.get("user"),
+        port=os.environ.get("port"),
         password=os.environ.get("password"),
         database=os.environ.get("database")
     )
@@ -33,10 +34,10 @@ def recuperer_donnees(id_nuit : int):
             pass
         return result
 
-    nbapnees = call_proc(cur, "clinique.sp_compteur_apnees()")
-    nbhypopnees = call_proc(cur, "clinique.sp_compteur_hypopnae()")
-    nbrera = call_proc(cur, "clinique.sp_compteur_rera()")
-    nbr_events = call_proc(cur, "clinique.sp_compteur_all()")
+    nbapnees = call_proc(cur, "clinique2nuitsv2.sp_compteur_apnees()")
+    nbhypopnees = call_proc(cur, "clinique2nuitsv2.sp_compteur_hypopnae()")
+    nbrera = call_proc(cur, "clinique2nuitsv2.sp_compteur_rera()")
+    nbr_events = call_proc(cur, "clinique2nuitsv2.sp_compteur_all()")
 
     queries_response = {
         'df_capteur': df_capteur,
@@ -46,6 +47,7 @@ def recuperer_donnees(id_nuit : int):
         'nbrera': nbrera,
         'nbr_events': nbr_events,
     }
+    print(nbhypopnees[0])
     conn.close()
 
     return queries_response
