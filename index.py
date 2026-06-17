@@ -16,3 +16,4 @@ def run_pipeline(id_nuit):
     sauvegarder_resultats(indicateurs, id_nuit)
 
 
+run_pipeline(1)
