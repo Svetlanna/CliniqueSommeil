@@ -1,34 +1,18 @@
-import pandas as pd
-import sqlite3
-import matplotlib.pyplot as plt
-import os
-
-def extract_data(csv_path, sql_query):
-    # Lecture du CSV
-    df = pd.read_csv(csv_path)
+from etl.extract import recuperer_donnees
+from etl.transform import calculer_indicateurs
+from etl.load import sauvegarder_resultats
 
 
+def run_pipeline(id_nuit):
+    df_capteur, data_sql = recuperer_donnees(id_nuit)
+    print(f"Extraction terminée : {len(df_capteur)} lignes lues dans le CSV.")
 
-    conn = sqlite3.connect('clinique2nuitsv2.sql')
-    df_events = pd.read_sql(sql_query, conn)
-    conn.close()
-    return df, df_events
+    # 2. Transformation
+    print("Étape 2 : Calcul des indicateurs...")
+    indicateurs = calculer_indicateurs(df_capteur, data_sql)
 
-def transform_data(df, df_events):
+    # 3. Chargement
+    print("Étape 3 : Sauvegarde dans le Datalake...")
+    sauvegarder_resultats(indicateurs, id_nuit)
 
-    stats = {
-        'spo2_min': df['spo2'].min(),
-        'spo2_moy': df['spo2'].mean(),
-        'spo2_mediane': df['spo2'].median(),
-        'decibels_max': df['ronflements_db'].max(),
-        'decibels_moy': df['ronflements_db'].mean(),
-        'nbronflementsforts': (df['ronflements_db'] > 70).sum(),
-        'position_dominante': df['position'].mode()[0],
-        'dureehypoxiemin': (df[df['spo2'] < 90].shape[0] * 10) / 60 # 1 ligne = 10s
-    }
-    # ... calculs basés sur df_events ...
-    return stats
 
-def load_to_datalake(stats, table_name, db_path='datalake.db'):
-    # Logique d'insertion dans SQLite
-    pass
