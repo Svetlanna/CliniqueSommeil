@@ -4,12 +4,14 @@ from etl.load import sauvegarder_resultats
 
 
 def run_pipeline(id_nuit):
-    df_capteur, data_sql = recuperer_donnees(id_nuit)
-    print(f"Extraction terminée : {len(df_capteur)} lignes lues dans le CSV.")
+    queries_response : dict = recuperer_donnees(id_nuit)
+    df_capteur = queries_response['df_capteur']
+    df_event = queries_response['df_events']
+    print(f"Étape 1 : Extraction : \n    {len(df_capteur)} lignes lues dans le CSV.\n    {queries_response['nbr_events'][0]} lignes lues dans la base MySQL.")
 
     # 2. Transformation
     print("Étape 2 : Calcul des indicateurs...")
-    indicateurs = calculer_indicateurs(df_capteur, data_sql)
+    indicateurs = calculer_indicateurs(df_capteur, df_event)
 
     # 3. Chargement
     print("Étape 3 : Sauvegarde dans le Datalake...")
