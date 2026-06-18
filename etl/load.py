@@ -53,6 +53,6 @@ def sauvegarder_resultats(indicateurs, id_nuit):
     # Vérification après insertion
     cursor.execute("SELECT COUNT(*) FROM curated_nuit WHERE id_nuit = ?", (id_nuit,))
     count = cursor.fetchone()[0]
-    print(f"DEBUG: {count} ligne(s) trouvée(s) pour la nuit {id_nuit} dans {db_path}")
+    print(f"(load.py)DEBUG: {count} ligne(s) trouvée(s) pour la nuit {id_nuit} dans {db_path}")
 
     conn.close()
