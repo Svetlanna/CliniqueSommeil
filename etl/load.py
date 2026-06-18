@@ -1,16 +1,15 @@
 import sqlite3
 import os
+import matplotlib.pyplot as plt
 
 
-def sauvegarder_resultats(indicateurs, id_nuit):
-    # Chemin vers le dossier racine du projet
+def sauvegarder_resultats(indicateurs, id_nuit, df_capteur):
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     db_path = os.path.join(base_dir, 'datalake.db')
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Création de la table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS curated_nuit (
         id_curated INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +49,16 @@ def sauvegarder_resultats(indicateurs, id_nuit):
     cursor.execute(query, data)
     conn.commit()
 
-    # Vérification après insertion
+    plt.figure()
+    plt.plot(df_capteur.index, df_capteur['spo2'], marker='o')
+    plt.xlabel("Temps")
+    plt.ylabel("SpO2 ")
+    plt.title(f"Évolution SpO2 - Nuit {id_nuit}")
+    plt.grid(True)
+    plt.savefig(f"courbe_spo2_nuit_{id_nuit}.png")
+    plt.close()
+    print("Courbe SpO2 sauvegardée.")
+
     cursor.execute("SELECT COUNT(*) FROM curated_nuit WHERE id_nuit = ?", (id_nuit,))
     count = cursor.fetchone()[0]
     print(f"DEBUG: {count} ligne(s) trouvée(s) pour la nuit {id_nuit} dans {db_path}")
