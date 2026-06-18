@@ -1,5 +1,91 @@
 import sqlite3
 import os
+import shutil
+
+
+def creer_tables_datalake():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    db_path = os.path.join(base_dir, 'datalake.db')
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS raw_capteur (
+        id_raw              INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_nuit             INTEGER NOT NULL,
+        timestamp_sec       INTEGER NOT NULL,
+        spo2                REAL,
+        debitnasalpct       REAL,
+        effortthoraciquepct REAL,
+        position            TEXT,
+        ronflements_db      REAL,
+        flagevenement       INTEGER CHECK (flagevenement IN (0,1))
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS curated_nuit (
+        id_curated        INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_nuit           INTEGER NOT NULL,
+        spo2_min          REAL,
+        spo2_moy          REAL,
+        spo2_mediane      REAL,
+        nb_apnees         INTEGER,
+        nb_hypopnees      INTEGER,
+        nb_rera           INTEGER,
+        nb_microeveils    INTEGER,
+        dureehypoxiemin   REAL,
+        position_dominante TEXT,
+        decibels_max      REAL,
+        decibels_moy      REAL,
+        nbronflementsforts INTEGER
+    );
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+def charger_raw_capteur(df_capteur, id_nuit):
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    db_path = os.path.join(base_dir, 'datalake.db')
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    rows = [
+        (
+            id_nuit,
+            int(row['timestamp_sec']),
+            row.get('spo2'),
+            row.get('debitnasalpct'),
+            row.get('effortthoraciquepct'),
+            row.get('position'),
+            row.get('ronflements_db'),
+            int(row['flag_evenement']) if row.get('flag_evenement') is not None else None,
+        )
+        for _, row in df_capteur.iterrows()
+    ]
+
+    cursor.executemany("""
+    INSERT INTO raw_capteur (id_nuit, timestamp_sec, spo2, debitnasalpct, effortthoraciquepct, position, ronflements_db, flagevenement)
+    VALUES (?,?,?,?,?,?,?,?)
+    """, rows)
+
+    conn.commit()
+    print(f"(load.py) {len(rows)} lignes insérées dans raw_capteur pour la nuit {id_nuit}")
+    conn.close()
+
+
+def copier_csv_vers_traite(id_nuit):
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    nom_fichier = f"signal-psg-patient-{id_nuit}-nuit-{id_nuit}.csv"
+    src = os.path.join(base_dir, "raw", nom_fichier)
+    dst_dir = os.path.join(base_dir, "raw", "traite")
+    os.makedirs(dst_dir, exist_ok=True)
+    shutil.copy2(src, dst_dir)
+    print(f"(load.py) CSV nuit {id_nuit} copié dans raw/traite/")
 
 
 def sauvegarder_resultats(indicateurs, id_nuit):
@@ -9,19 +95,6 @@ def sauvegarder_resultats(indicateurs, id_nuit):
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-
-    # Création de la table
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS curated_nuit (
-        id_curated INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_nuit INTEGER NOT NULL,
-        spo2_min REAL, spo2_moy REAL, spo2_mediane REAL,
-        nb_apnees INTEGER, nb_hypopnees INTEGER, nb_rera INTEGER,
-        nb_microeveils INTEGER, dureehypoxiemin REAL,
-        position_dominante TEXT, decibels_max REAL,
-        decibels_moy REAL, nbronflementsforts INTEGER
-    );
-    """)
 
     query = """
     INSERT INTO curated_nuit (

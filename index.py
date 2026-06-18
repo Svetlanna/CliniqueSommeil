@@ -4,14 +4,17 @@ import sqlite3
 
 from etl.extract import recuperer_donnees
 from etl.transform import calculer_indicateurs
-from etl.load import sauvegarder_resultats
+from etl.load import creer_tables_datalake, sauvegarder_resultats, charger_raw_capteur, copier_csv_vers_traite
 
 
 def get_ids_nuit_disponibles():
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    dossier = os.path.join(base_dir, "raw", "traite")
+    dossier = os.path.join(base_dir, "raw")
     ids = []
+    # Choppe les ids des nuits dispo avec une regex
     for nom in sorted(os.listdir(dossier)):
+        if nom == "traite":
+            continue
         match = re.search(r"nuit-(\d+)\.csv$", nom)
         if match:
             ids.append(int(match.group(1)))
@@ -23,10 +26,12 @@ def get_ids_nuit_deja_traites():
     db_path = os.path.join(base_dir, "datalake.db")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+    # Sélection de la table curated_nuit
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='curated_nuit'")
     if not cursor.fetchone():
         conn.close()
         return set()
+    # Choppe les ids des nuits déja traités 
     cursor.execute("SELECT DISTINCT id_nuit FROM curated_nuit")
     ids = {row[0] for row in cursor.fetchall()}
     conn.close()
@@ -49,8 +54,14 @@ def run_pipeline(id_nuit):
     )
 
     print("Étape 3 : Sauvegarde dans le Datalake...")
+    charger_raw_capteur(df_capteur, id_nuit)
     sauvegarder_resultats(indicateurs, id_nuit)
 
+    print("Étape 4 : Archivage du CSV brut...")
+    copier_csv_vers_traite(id_nuit)
+
+# Créér les tables pour le datalake (la fonction est dans load)
+creer_tables_datalake()
 
 ids_disponibles = get_ids_nuit_disponibles()
 ids_traites = get_ids_nuit_deja_traites()
@@ -58,6 +69,7 @@ ids_traites = get_ids_nuit_deja_traites()
 print(f"Nuits disponibles : {ids_disponibles}")
 print(f"Nuits déjà dans le datalake : {sorted(ids_traites)}\n")
 
+# run la pipeline pour chaque nuit disponible
 for id_nuit in ids_disponibles:
     if id_nuit in ids_traites:
         print(f"--- Nuit {id_nuit} : déjà présente dans le datalake, ignorée.")

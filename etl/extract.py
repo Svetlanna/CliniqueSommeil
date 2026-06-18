@@ -8,7 +8,7 @@ load_dotenv()
 def recuperer_donnees(id_nuit : int):
     # lecture du CSV
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    chemin_csv = os.path.join(base_dir, "raw", "traite", f"signal-psg-patient-{id_nuit}-nuit-{id_nuit}.csv")
+    chemin_csv = os.path.join(base_dir, "raw", f"signal-psg-patient-{id_nuit}-nuit-{id_nuit}.csv")
     df_capteur = pd.read_csv(chemin_csv)
 
     # lecture des événements (MySQL)
@@ -21,8 +21,7 @@ def recuperer_donnees(id_nuit : int):
     )
 
     cur = conn.cursor(buffered=True)
-    query = f'SELECT * FROM evenement_respiratoire WHERE id_nuit = {id_nuit}'
-    cur.execute(query)
+    cur.execute('SELECT * FROM evenement_respiratoire WHERE id_nuit = %s', (id_nuit,))
     df_events = cur.fetchall()
 
     # Des bugs apparaissent lorsque chaque query est execute séparement
