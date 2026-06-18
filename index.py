@@ -23,7 +23,7 @@ def run_pipeline(id_nuit):
 
     # 3. Chargement
     print("Étape 3 : Sauvegarde dans le Datalake...")
-    sauvegarder_resultats(indicateurs, id_nuit)
+    sauvegarder_resultats(indicateurs, id_nuit,df_capteur)
 
 
 run_pipeline(2)
