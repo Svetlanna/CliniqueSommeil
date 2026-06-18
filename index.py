@@ -11,11 +11,19 @@ def run_pipeline(id_nuit):
 
     # 2. Transformation
     print("Étape 2 : Calcul des indicateurs...")
-    indicateurs = calculer_indicateurs(df_capteur, df_event)
+    indicateurs = calculer_indicateurs(
+        queries_response['df_capteur'],
+        queries_response['df_events'],
+        queries_response['nbapnees'],
+        queries_response['nbhypopnees'],
+        queries_response['nbrera'],
+        queries_response['nbr_events']  # Assurez-vous que cette clé est bien dans votre dict dans extract.py
+    )
+
 
     # 3. Chargement
     print("Étape 3 : Sauvegarde dans le Datalake...")
     sauvegarder_resultats(indicateurs, id_nuit)
 
 
-run_pipeline(1)
+run_pipeline(2)
