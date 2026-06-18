@@ -4,10 +4,8 @@ import matplotlib.pyplot as plt
 import shutil
 
 def creer_tables_datalake():
-
-def sauvegarder_resultats(indicateurs, id_nuit, df_capteur):
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    db_path = os.path.join(base_dir,'datalake.db')
+    db_path = os.path.join(base_dir, 'datalake.db')
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -90,7 +88,7 @@ def copier_csv_vers_traite(id_nuit):
     print(f"(load.py) CSV nuit {id_nuit} copié dans raw/traite/")
 
 
-def sauvegarder_resultats(indicateurs, id_nuit):
+def sauvegarder_resultats(indicateurs, id_nuit, df_capteur):
     # Chemin vers le dossier racine du projet
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     db_path = os.path.join(base_dir, 'datalake.db')
@@ -136,7 +134,7 @@ def sauvegarder_resultats(indicateurs, id_nuit):
     print("Courbe SpO2 sauvegardée.")
 
     plt.figure()
-    plt.plot(df_capteur.index, df_capteur['debit_nasal_pct'], color='green')
+    plt.plot(df_capteur.index, df_capteur['debitnasalpct'], color='green')
     plt.xlabel("Temps")
     plt.ylabel("Débit Nasal")
     plt.title(f"Évolution Débit Nasal - Nuit {id_nuit}")
