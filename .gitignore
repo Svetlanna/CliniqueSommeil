@@ -4,3 +4,4 @@ __pycache__/
 datalake.db
 cliniqueplusapp/
 brief.md
+outputs/

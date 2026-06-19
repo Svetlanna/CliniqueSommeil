@@ -17,7 +17,8 @@ def recuperer_donnees(id_nuit : int):
         user=os.environ.get("user"),
         port=os.environ.get("port"),
         password=os.environ.get("password"),
-        database=os.environ.get("database")
+        database=os.environ.get("database"),
+        use_pure=True
     )
 
     cur = conn.cursor(buffered=True)
