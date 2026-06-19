@@ -5,3 +5,4 @@ datalake.db
 cliniqueplusapp/
 brief.md
 outputs/
+node_modules/
