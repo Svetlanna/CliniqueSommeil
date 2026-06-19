@@ -10,7 +10,7 @@ import { calculerIndicateurs } from '../etl/transform.js';
 
 export const fetchNuitData = async (idNuit) => {
     // 1. Lecture CSV
-    const baseDir = '/python-projs/Clinique-Sommeil/clinique-sommeil/Api/';
+    const baseDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const cheminCsv = path.join(baseDir, "raw", "traite", `signal-psg-patient-${idNuit}-nuit-${idNuit}.csv`);
 
     const dfCapteur = await new Promise((resolve, reject) => {
