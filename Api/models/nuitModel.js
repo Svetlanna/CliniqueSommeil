@@ -1,12 +1,16 @@
+import fs from 'fs';
+import path from 'path';
 import csvParser from 'csv-parser';
 import { pool } from '../config/db.js';
+
+
 import { recupererDonnees } from '../etl/extract.js';
 
 import { calculerIndicateurs } from '../etl/transform.js';
 
-export const getNuitData = async (idNuit) => {
-    //  CSV
-    const baseDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
+export const fetchNuitData = async (idNuit) => {
+    // 1. Lecture CSV
+    const baseDir = '/python-projs/Clinique-Sommeil/clinique-sommeil/Api/';
     const cheminCsv = path.join(baseDir, "raw", "traite", `signal-psg-patient-${idNuit}-nuit-${idNuit}.csv`);
 
     const dfCapteur = await new Promise((resolve, reject) => {
@@ -19,7 +23,7 @@ export const getNuitData = async (idNuit) => {
             .on('error', reject);
     });
 
-    // SQL
+    // 2. Accès SQL
     const [dfEvents] = await pool.execute('SELECT * FROM evenement_respiratoire WHERE id_nuit = ?', [idNuit]);
     const [apnees, hypo, rera, all] = await Promise.all([
         pool.query("CALL sp_compteur_apnees()"),
@@ -38,7 +42,7 @@ export const getNuitData = async (idNuit) => {
     };
 };
 
-export const getStatsNuit = async (id) => {
+export const getStats = async (id) => {
     const rawData = await recupererDonnees(id);
     return calculerIndicateurs(
         rawData.df_capteur,

@@ -1,9 +1,10 @@
 import express from 'express';
-import * as NuitController from '../controllers/nuitController.js';
+// Corrected: Remove the duplicate 'getStats'
+import { getNuitData, getStats } from "../controllers/nuitController.js";
 
 const router = express.Router();
 
-router.get('/:id/run', NuitController.runNuit);
-router.get('/:id/stats', NuitController.getStats);
+router.get('/:id/run', getNuitData);
+router.get('/:id/stats', getStats);
 
 export default router;

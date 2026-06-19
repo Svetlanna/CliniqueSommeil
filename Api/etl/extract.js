@@ -17,7 +17,7 @@ const pool = mysql.createPool({
 
 export async function recupererDonnees(idNuit) {
     // lecture CSV
- const baseDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
+     const baseDir ='/python-projs/Clinique-Sommeil/clinique-sommeil/'
     const cheminCsv = path.join(baseDir, "raw", "traite", `signal-psg-patient-${idNuit}-nuit-${idNuit}.csv`);
 
 
