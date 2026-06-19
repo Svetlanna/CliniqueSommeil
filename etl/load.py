@@ -125,6 +125,50 @@ def sauvegarder_resultats(indicateurs, id_nuit, df_capteur):
 
     cursor.execute(query, data)
     conn.commit()
+    # /////////////////222222222222222222222///////////////////////////////////////
+    # 2. Enregistrement des données brutes (raw_capteur)
+    cursor2 = conn.cursor()
+
+    cursor2.execute("""
+           CREATE TABLE IF NOT EXISTS raw_capteur (
+            id_raw INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_nuit INTEGER NOT NULL,
+            timestamp_sec INTEGER NOT NULL,
+            spo2 REAL,
+            debitnasalpct REAL,
+            effortthoraciquepct REAL,
+            position TEXT,
+            ronflements_db REAL,
+            flagevenement INTEGER
+           );
+           """)
+
+    query2 = """
+           INSERT INTO raw_capteur (
+            id_nuit, timestamp_sec, spo2, debitnasalpct,
+            effortthoraciquepct, position, ronflements_db, flagevenement
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+           """
+
+    # Itération sur chaque ligne du DataFrame pour l'insertion
+    for index, row in df_capteur.iterrows():
+        # Construction du tuple pour la ligne courante
+        data_row = (
+            id_nuit,
+            row['timestamp_sec'],
+            row['spo2'],
+            row['debit_nasal_pct'],  # Vérifiez bien le nom de la colonne
+            row['effort_thoracique_pct'],
+            row['position'],
+            row['ronflements_db'],
+            0  # Valeur par défaut pour flagevenement, à ajuster si besoin
+        )
+        cursor2.execute(query2, data_row)
+
+    conn.commit()
+    print(f"Sauvegarde de {len(df_capteur)} lignes dans raw_capteur effectuée.")
+
+    # ////////////////////////222222222222222222///////////////////////////////////
 
     courbSpo2 = os.path.join(output_dir, f"courbe_spo2_nuit_{id_nuit}.png")
     plt.figure()

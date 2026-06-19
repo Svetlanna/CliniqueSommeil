@@ -18,13 +18,11 @@ const pool = mysql.createPool({
 });
 
 export async function recupererDonnees(idNuit) {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const baseDir = path.join(__dirname, '..', 'raw', 'traite');
-    const cheminCsv = path.join(baseDir, `signal-psg-patient-${idNuit}-nuit-${idNuit}.csv`);
-    
 
-    // pool.execute directement
+    // lecture CSV reste identique
+    const baseDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
+    const cheminCsv = path.join(baseDir, "raw", "traite", `signal-psg-patient-${idNuit}-nuit-${idNuit}.csv`);
+
 const dfCapteur = await new Promise((resolve, reject) => {
 
     if (!fs.existsSync(cheminCsv)) {
@@ -54,7 +52,7 @@ const dfCapteur = await new Promise((resolve, reject) => {
 
         const [nbApnees, nbHypopnees, nbRera, nbrEvents] = await Promise.all([
             pool.query("CALL sp_compteur_apnees()"),
-            pool.query("CALL sp_compteur_hypopnee()"),
+            pool.query("CALL sp_compteur_hypopnae()"),
             pool.query("CALL sp_compteur_rera()"),
             pool.query("CALL sp_compteur_all()")
         ]);
