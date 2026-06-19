@@ -20,7 +20,7 @@ export async function recupererDonnees(idNuit) {
     const baseDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
     const cheminCsv = path.join(baseDir, "raw", "traite", `signal-psg-patient-${idNuit}-nuit-${idNuit}.csv`);
 
-    // pool.execute directement
+
 const dfCapteur = await new Promise((resolve, reject) => {
 
     if (!fs.existsSync(cheminCsv)) {
