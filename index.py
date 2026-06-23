@@ -55,7 +55,9 @@ def run_pipeline(id_nuit):
 
     print("Étape 3 : Sauvegarde dans le Datalake...")
     charger_raw_capteur(df_capteur, id_nuit)
-    sauvegarder_resultats(indicateurs, id_nuit, df_capteur)
+    sauvegarde_resultat =  sauvegarder_resultats(indicateurs, id_nuit, df_capteur)
+    if sauvegarde_resultat:
+        print("Résultats enregistrés avec succès.")
 
     print("Étape 4 : Archivage du CSV brut...")
     copier_csv_vers_traite(id_nuit)
@@ -76,6 +78,6 @@ for id_nuit in ids_disponibles:
         continue
     print(f"--- Pipeline nuit {id_nuit} ---")
     run_pipeline(id_nuit)
-    print()
-
+    print(f"--- Pipeline {id_nuit} : Terminé ")
+ 
 print("Pipeline terminé.")
